@@ -15,7 +15,7 @@ export default function Events() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pt-20">
 
       {/* Hero */}
       <div className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-24 text-center">
