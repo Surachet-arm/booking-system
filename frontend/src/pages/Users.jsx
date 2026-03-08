@@ -26,7 +26,7 @@ export default function Users() {
         {users.map((u) => (
           <div
             key={u._id}
-            className="flex justify-between p-4"
+            className="flex justify-between text-black p-4"
           >
             <span>{u.email}</span>
 

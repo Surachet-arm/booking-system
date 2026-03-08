@@ -13,8 +13,12 @@ export default function EventDetail() {
   useEffect(() => {
 
     const fetchEvent = async () => {
-      const res = await api.get(`/events/${id}`);
-      setEvent(res.data);
+      try {
+        const res = await api.get(`/events/${id}`);
+        setEvent(res.data);
+      } catch (err) {
+        console.error(err);
+      }
     };
 
     fetchEvent();
@@ -32,24 +36,35 @@ export default function EventDetail() {
 
   };
 
-  if (!event) return <p className="p-20">Loading...</p>;
+  if (!event) return <p className="p-20 text-center">Loading...</p>;
+
+  const remaining = event.capacity - (event.booked || 0);
 
   return (
+
     <div className="min-h-screen bg-gray-100 pt-28">
 
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden grid md:grid-cols-2">
 
-        {/* Image */}
-        <img
-          src={event.image || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4"}
-          className="w-full h-full object-cover"
-          alt="event"
-        />
+        {/* IMAGE */}
+        <div className="w-full h-full">
 
-        {/* Detail */}
-        <div className="p-10">
+          <img
+            src={
+              event.image
+                ? `http://localhost:5000/uploads/${event.image}`
+                : "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4"
+            }
+            className="w-full h-full object-cover"
+            alt={event.title}
+          />
 
-          <h1 className="text-3xl font-bold mb-4">
+        </div>
+
+        {/* DETAIL */}
+        <div className="p-10 flex flex-col justify-center">
+
+          <h1 className="text-3xl text-black font-bold mb-4">
             {event.title}
           </h1>
 
@@ -57,24 +72,24 @@ export default function EventDetail() {
             {event.description}
           </p>
 
-          <p className="mb-2">
+          <p className="mb-2 text-gray-700">
             📅 {new Date(event.date).toLocaleDateString("th-TH")}
           </p>
 
-          <p className="mb-2">
-            👥 คนจองแล้ว {event.booked}
+          <p className="mb-2 text-gray-700">
+            👥 คนจองแล้ว {event.booked || 0}
           </p>
 
           <p className="mb-6 text-green-600 font-semibold">
-            🎟 เหลือ {event.remaining} ที่นั่ง
+            🎟 เหลือ {remaining} ที่นั่ง
           </p>
 
           <p className="text-2xl font-bold text-indigo-600 mb-6">
             ฿{event.price}
           </p>
 
-          {/* Quantity */}
-          <div className="flex items-center gap-4 mb-6">
+          {/* QUANTITY */}
+          <div className="flex items-center gap-4 mb-6 text-black">
 
             <span>จำนวนตั๋ว</span>
 
@@ -82,21 +97,25 @@ export default function EventDetail() {
               type="number"
               value={quantity}
               min="1"
-              max={event.remaining}
-              onChange={(e) => setQuantity(Number(e.target.value))}
+              max={remaining}
+              onChange={(e) =>
+                setQuantity(Math.min(Number(e.target.value), remaining))
+              }
               className="border px-3 py-2 w-20 rounded"
             />
 
           </div>
 
-          {/* Total */}
-          <p className="mb-6 text-lg font-semibold">
+          {/* TOTAL */}
+          <p className="mb-6 text-lg text-black font-semibold">
             รวมราคา: ฿{event.price * quantity}
           </p>
 
+          {/* BUTTON */}
           <button
             onClick={bookTicket}
-            className="w-full !bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+            disabled={remaining <= 0}
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition disabled:bg-gray-400"
           >
             ไปหน้าชำระเงิน
           </button>
@@ -106,5 +125,6 @@ export default function EventDetail() {
       </div>
 
     </div>
+
   );
 }

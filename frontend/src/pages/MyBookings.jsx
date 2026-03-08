@@ -18,8 +18,11 @@ export default function MyBookings() {
 
         const fetchBookings = async () => {
             try {
-                const res = await api.get("/bookings/my");
-                setBookings(res.data);
+                const res = await api.get("/bookings");
+                const myBookings = res.data.filter(
+                    (b) => b.user?._id === user._id
+                );
+                setBookings(myBookings);
             } catch (err) {
                 console.error(err);
             } finally {

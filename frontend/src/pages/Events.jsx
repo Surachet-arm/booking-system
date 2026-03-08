@@ -3,14 +3,19 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 export default function Events() {
+
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
       const res = await api.get("/events");
-      setEvents(res.data);
+
+      console.log(res.data);
+
+      setEvents(Array.isArray(res.data) ? res.data : [res.data]);
     };
+
     fetchEvents();
   }, []);
 
@@ -45,43 +50,64 @@ export default function Events() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
           {events.map((e) => (
+
             <div
               key={e._id}
-              className="bg-white rounded-xl shadow-md p-6 flex flex-col justify-between"
+              className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition"
             >
-              <div>
-                <h3 className="text-2xl font-semibold mb-2">
-                  {e.title}
-                </h3>
 
-                <p className="text-gray-600 mb-4">
-                  {e.description}
-                </p>
+              {/* Event Image */}
+              {e.image && (
+                <img
+                  src={`http://localhost:5000/uploads/${e.image}`}
+                  alt={e.title}
+                  className="w-full h-48 object-cover"
+                />
+              )}
 
-                <p className="text-sm text-gray-500 mb-4">
-                  📅 {new Date(e.date).toLocaleDateString("th-TH")}
-                </p>
+              <div className="p-6 flex flex-col justify-between">
+
+                <div>
+
+                  <h3 className="text-2xl text-black font-semibold mb-2">
+                    {e.title}
+                  </h3>
+
+                  <p className="text-gray-600 mb-4">
+                    {e.description}
+                  </p>
+
+                  <p className="text-sm text-gray-500 mb-4">
+                    📅 {new Date(e.date).toLocaleString("th-TH")}
+                  </p>
+
+                </div>
+
+                <div className="flex justify-between items-center mt-4">
+
+                  <span className="text-indigo-600 font-bold text-xl">
+                    ฿{e.price}
+                  </span>
+
+                  <button
+                    onClick={() => navigate(`/event/${e._id}`)}
+                    className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
+                  >
+                    จองเลย
+                  </button>
+
+                </div>
+
               </div>
 
-              <div className="flex justify-between items-center mt-4">
-
-                <span className="text-indigo-600 font-bold text-xl">
-                  ฿{e.price}
-                </span>
-
-                <button
-                  onClick={() => navigate(`/event/${e._id}`)}
-                  className="!bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
-                >
-                  จองเลย
-                </button>
-
-              </div>
             </div>
+
           ))}
 
         </div>
+
       </div>
+
     </div>
   );
 }

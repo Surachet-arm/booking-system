@@ -1,26 +1,30 @@
-import { useLocation, useNavigate } from "react-router-dom";
+﻿import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import api from "../api";
 
 export default function Payment() {
-
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { event, quantity } = location.state;
 
   const total = event.price * quantity;
 
   const confirmPayment = async () => {
+    try {
+      await api.post("/bookings", {
+        eventId: event._id,
+        quantity: quantity,
+        totalPrice: event.price * quantity,
+        userId: user._id
+      });
 
-    await api.post("/bookings", {
-      eventId: event._id,
-      quantity
-    });
-
-    alert("จองสำเร็จ");
-
-    navigate("/");
-
+      alert("Booking successful");
+      navigate("/my-bookings");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -28,7 +32,7 @@ export default function Payment() {
 
       <div className="bg-white w-[420px] rounded-2xl shadow-xl p-10 text-center">
 
-        <h1 className="text-3xl font-semibold mb-6 text-gray-800">
+        <h1 className="text-3xl font-semibold mb-6 text-black text-gray-800">
           ชำระเงิน
         </h1>
 
@@ -47,7 +51,7 @@ export default function Payment() {
         <div className="text-left mb-6 space-y-2">
 
           <p className="font-medium text-gray-700">
-            🎫 {event.title}
+            Ticket: {event.title}
           </p>
 
           <p className="text-gray-600">
@@ -62,7 +66,7 @@ export default function Payment() {
 
         <button
           onClick={confirmPayment}
-          className="w-full !bg-green-600 text-white py-3 rounded-xl font-medium hover:bg-green-700 transition"
+          className="w-full bg-green-600 text-white py-3 rounded-lg"
         >
           ยืนยันการโอน
         </button>

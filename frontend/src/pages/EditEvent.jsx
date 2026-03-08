@@ -7,24 +7,41 @@ export default function EditEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [price, setPrice] = useState("");
-  const [capacity, setCapacity] = useState("");
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    date: "",
+    price: "",
+    capacity: ""
+  });
+
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState("");
 
   useEffect(() => {
 
     const fetchEvent = async () => {
 
-      const res = await api.get(`/events/${id}`);
-      const e = res.data;
+      try {
 
-      setTitle(e.title);
-      setDescription(e.description);
-      setDate(e.date.substring(0,10));
-      setPrice(e.price);
-      setCapacity(e.capacity);
+        const res = await api.get(`/events/${id}`);
+        const e = res.data;
+
+        setForm({
+          title: e.title || "",
+          description: e.description || "",
+          date: e.date ? e.date.substring(0,10) : "",
+          price: e.price || "",
+          capacity: e.capacity || ""
+        });
+
+        if (e.image) {
+          setPreview(`http://localhost:5000/uploads/${e.image}`);
+        }
+
+      } catch (err) {
+        console.error(err);
+      }
 
     };
 
@@ -32,136 +49,162 @@ export default function EditEvent() {
 
   }, [id]);
 
+  const handleChange = (e) => {
+
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+
+  };
+
+  const handleImage = (e) => {
+
+    const file = e.target.files[0];
+
+    setImage(file);
+
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
+
+  };
+
   const updateEvent = async (e) => {
 
     e.preventDefault();
 
-    await api.put(`/events/${id}`, {
-      title,
-      description,
-      date,
-      price,
-      capacity
-    });
+    try {
 
-    alert("อัพเดต Event สำเร็จ");
+      const data = new FormData();
 
-    navigate("/dashboard");
+      data.append("title", form.title);
+      data.append("description", form.description);
+      data.append("date", form.date);
+      data.append("price", form.price);
+      data.append("capacity", form.capacity);
+
+      if (image) {
+        data.append("image", image);
+      }
+
+      await api.put(`/events/${id}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+
+      alert("อัพเดต Event สำเร็จ");
+
+      navigate("/dashboard");
+
+    } catch (err) {
+
+      console.error(err);
+      alert("เกิดข้อผิดพลาด");
+
+    }
 
   };
 
   return (
 
-    <div className="min-h-screen bg-gray-100 pt-28 flex justify-center items-start">
+    <div className="min-h-screen bg-gray-100 pt-28 flex justify-center">
 
       <div className="bg-white p-10 rounded-2xl shadow-xl w-[520px]">
 
-        {/* Header */}
-
-        <div className="flex justify-between items-center mb-6">
-
-          <h1 className="text-2xl font-bold text-indigo-600">
-            แก้ไข Event
-          </h1>
-
-
-        </div>
+        <h1 className="text-2xl font-bold text-indigo-600 mb-6">
+          แก้ไข Event
+        </h1>
 
         <form onSubmit={updateEvent} className="space-y-5">
 
           {/* Title */}
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-600">
-              ชื่อ Event
-            </label>
-
-            <input
-              value={title}
-              onChange={(e)=>setTitle(e.target.value)}
-              className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
-          </div>
+          <input
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            placeholder="ชื่อ Event"
+            className="w-full border border-gray-300 p-3 rounded-lg text-black"
+          />
 
           {/* Description */}
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-600">
-              รายละเอียด
-            </label>
-
-            <textarea
-              value={description}
-              onChange={(e)=>setDescription(e.target.value)}
-              className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
-          </div>
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="รายละเอียด"
+            className="w-full border border-gray-300 p-3 rounded-lg text-black"
+          />
 
           {/* Date */}
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-600">
-              วันที่จัดงาน
-            </label>
-
-            <input
-              type="date"
-              value={date}
-              onChange={(e)=>setDate(e.target.value)}
-              className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
-          </div>
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border border-gray-300 p-3 rounded-lg text-black"
+          />
 
           {/* Price */}
 
-          <div>
-            <label className="block mb-1 text-sm text-gray-600">
-              ราคา (บาท)
-            </label>
-
-            <input
-              type="number"
-              value={price}
-              onChange={(e)=>setPrice(e.target.value)}
-              className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
-            />
-          </div>
+          <input
+            type="number"
+            name="price"
+            value={form.price}
+            onChange={handleChange}
+            placeholder="ราคา"
+            className="w-full border border-gray-300 p-3 rounded-lg text-black"
+          />
 
           {/* Capacity */}
 
+          <input
+            type="number"
+            name="capacity"
+            value={form.capacity}
+            onChange={handleChange}
+            placeholder="จำนวนที่นั่ง"
+            className="w-full border border-gray-300 p-3 rounded-lg text-black"
+          />
+
+          {/* IMAGE UPLOAD */}
+
           <div>
-            <label className="block mb-1 text-sm text-gray-600">
-              จำนวนที่นั่ง
+
+            <label className="block mb-2 text-gray-700 font-medium">
+              รูป Event
             </label>
 
             <input
-              type="number"
-              value={capacity}
-              onChange={(e)=>setCapacity(e.target.value)}
-              className="w-full border px-4 py-3 rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none"
+              type="file"
+              onChange={handleImage}
+              className="w-full border border-gray-300 p-3 rounded-lg text-black bg-white"
             />
-          </div>
 
-          {/* Buttons */}
-
-          <div className="flex gap-3 pt-4">
-
-            <button
-              type="submit"
-              className="flex-1 !bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
-            >
-              อัพเดต
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/dashboard")}
-              className="flex-1 !bg-gray-200 py-3 rounded-lg hover:bg-gray-300 transition"
-            >
-              ยกเลิก
-            </button>
+            {preview && (
+              <div className="mt-4 border border-gray-300 rounded-lg overflow-hidden">
+                <img
+                  src={preview}
+                  alt="preview"
+                  className="w-full h-48 object-cover"
+                />
+              </div>
+            )}
 
           </div>
+
+          {/* BUTTON */}
+
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 text-white py-3 rounded-lg hover:bg-indigo-700 transition"
+          >
+            อัพเดต
+          </button>
 
         </form>
 

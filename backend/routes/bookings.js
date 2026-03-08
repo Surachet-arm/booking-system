@@ -1,35 +1,56 @@
 import express from "express";
 import Booking from "../models/Booking.js";
 import Event from "../models/Event.js";
-import protect from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/", protect, async (req, res) => {
-  const event = await Event.findById(req.body.eventId);
-  const total = event.price * req.body.quantity;
+/* CREATE BOOKING */
+router.post("/", async (req, res) => {
+  try {
+    const { eventId, quantity, totalPrice, userId } = req.body;
+    const parsedQuantity = Number(quantity);
+    const parsedTotalPrice = Number(totalPrice);
 
-  const booking = await Booking.create({
-    user: req.user.id,
-    event: event._id,
-    quantity: req.body.quantity,
-    totalPrice: total
-  });
+    if (!eventId || !userId || !parsedQuantity || Number.isNaN(parsedTotalPrice)) {
+      return res.status(400).json({ message: "eventId, quantity, totalPrice, and userId are required" });
+    }
 
-  res.json(booking);
+    const booking = new Booking({
+      user: userId,
+      event: eventId,
+      quantity: parsedQuantity,
+      totalPrice: parsedTotalPrice
+    });
+
+    await booking.save();
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    event.booked = (event.booked || 0) + parsedQuantity;
+    await event.save();
+
+    res.json(booking);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
+  }
 });
 
-router.get("/my", protect, async (req, res) => {
-  const bookings = await Booking.find({ user: req.user.id }).populate("event");
-  res.json(bookings);
-});
+/* GET BOOKINGS */
+router.get("/", async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate("event")
+      .populate("user");
 
-router.get("/", protect, async (req, res) => {
-  const bookings = await Booking.find()
-    .populate("user", "email")
-    .populate("event", "title date");
-
-  res.json(bookings);
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 export default router;

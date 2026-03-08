@@ -22,5 +22,6 @@ app.use("/api/users", users);
 app.use("/api/auth", auth);
 app.use("/api/events", events);
 app.use("/api/bookings", bookings);
+app.use("/uploads", express.static("uploads"));
 
 app.listen(5000, () => console.log("Server running"));

@@ -92,22 +92,19 @@ export default function Dashboard() {
 
         {events.map((e) => {
 
+          const remaining = e.capacity - (e.booked || 0);
+
           const percent = e.capacity
             ? (e.booked / e.capacity) * 100
             : 0;
 
           return (
 
-            <div
-              key={e._id}
-              className="flex justify-between items-center p-5 border-b"
-            >
-
-              {/* Left */}
+            <div key={e._id} className="flex justify-between items-center p-5 border-b">
 
               <div className="w-full max-w-xl">
 
-                <p className="font-semibold text-lg">
+                <p className="font-semibold text-black text-lg">
                   {e.title}
                 </p>
 
@@ -118,22 +115,20 @@ export default function Dashboard() {
                 <div className="flex gap-6 mt-2 text-sm">
 
                   <span className="text-blue-600 font-medium">
-                    👥 คนจอง: {e.booked}
+                    👥 คนจอง: {e.booked || 0}
                   </span>
 
                   <span className="text-green-600 font-medium">
-                    🎟 เหลือ: {e.remaining}
+                    🎟 เหลือ: {remaining}
                   </span>
 
-                  {e.remaining === 0 && (
+                  {remaining === 0 && (
                     <span className="text-red-500 font-semibold">
                       SOLD OUT
                     </span>
                   )}
 
                 </div>
-
-                {/* Progress */}
 
                 <div className="w-full bg-gray-200 h-2 rounded mt-3">
 
