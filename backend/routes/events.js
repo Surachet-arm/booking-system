@@ -1,6 +1,7 @@
 import express from "express";
 import Event from "../models/Event.js";
 import multer from "multer";
+import Booking from "../models/Booking.js";
 
 const router = express.Router();
 
@@ -17,8 +18,26 @@ const upload = multer({ storage });
 /* GET ALL EVENTS */
 router.get("/", async (req, res) => {
   try {
-    const events = await Event.find().sort({ date: 1 });
-    res.json(events);
+
+    const events = await Event.find().sort({ date: 1 }).lean();
+    const bookings = await Booking.find().lean();
+
+    const eventsWithBookings = events.map(event => {
+
+      const booked = bookings
+        .filter(b => b.event.toString() === event._id.toString())
+        .reduce((sum, b) => sum + (b.quantity || 1), 0);
+
+      return {
+        ...event,
+        booked,
+        remaining: Math.max(event.capacity - booked, 0)
+      };
+
+    });
+
+    res.json(eventsWithBookings);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -27,8 +46,26 @@ router.get("/", async (req, res) => {
 /* GET EVENT BY ID */
 router.get("/:id", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-    res.json(event);
+
+    const event = await Event.findById(req.params.id).lean();
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const bookings = await Booking.find({ event: event._id });
+
+    const booked = bookings.reduce(
+      (sum, b) => sum + (b.quantity || 1),
+      0
+    );
+
+    res.json({
+      ...event,
+      booked,
+      remaining: Math.max(event.capacity - booked, 0)
+    });
+
   } catch (err) {
     res.status(404).json({ message: "Event not found" });
   }
@@ -44,7 +81,6 @@ router.post("/", upload.single("image"), async (req, res) => {
       date: req.body.date,
       price: req.body.price,
       capacity: req.body.capacity,
-      booked: 0, // เพิ่มตรงนี้
       image: req.file ? req.file.filename : ""
     });
 
@@ -118,15 +154,21 @@ router.post("/:id/book", async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    if (event.booked + quantity > event.capacity) {
+    const bookings = await Booking.find({ event: event._id });
+
+    const booked = bookings.reduce(
+      (sum, b) => sum + (b.quantity || 1),
+      0
+    );
+
+    if (booked + quantity > event.capacity) {
       return res.status(400).json({ message: "Tickets sold out" });
     }
 
-    event.booked += quantity;
-
-    await event.save();
-
-    res.json(event);
+    res.json({
+      message: "Booking available",
+      remaining: event.capacity - (booked + quantity)
+    });
 
   } catch (err) {
 

@@ -129,7 +129,7 @@ export default function Login() {
               <p className="text-blue-600 font-semibold">
                 สถานะ: User
               </p>
-              <p className="text-gray-700">Email: user@gmail.com</p>
+              <p className="text-gray-700">Email: test@gmail.com</p>
               <p className="text-gray-700">Password: 1234</p>
             </div>
 

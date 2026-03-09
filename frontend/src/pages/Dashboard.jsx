@@ -115,7 +115,7 @@ export default function Dashboard() {
                 <div className="flex gap-6 mt-2 text-sm">
 
                   <span className="text-blue-600 font-medium">
-                    👥 คนจอง: {e.booked || 0}
+                    👥 คนจอง: {e.capacity - e.remaining}
                   </span>
 
                   <span className="text-green-600 font-medium">
