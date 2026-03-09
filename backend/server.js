@@ -7,8 +7,8 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import path from "path";
-import { connectDB } from "./config/db.js";
 
+import { connectDB } from "./config/db.js";
 import auth from "./routes/auth.js";
 import events from "./routes/events.js";
 import bookings from "./routes/bookings.js";
@@ -28,7 +28,7 @@ app.use("/api/bookings", bookings);
 
 app.use(
   "/uploads",
-  express.static(path.join(process.cwd(), "backend/uploads"))
+  express.static(path.join(process.cwd(), "backend", "uploads"))
 );
 
 app.listen(5000, () => console.log("Server running"));
