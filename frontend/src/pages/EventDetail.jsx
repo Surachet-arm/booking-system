@@ -52,7 +52,7 @@ export default function EventDetail() {
           <img
             src={
               event.image
-                ? `http://localhost:5000/uploads/${event.image}`
+                ? `https://booking-system-72uy.onrender.com/uploads/${event.image}`
                 : "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4"
             }
             className="w-full h-full object-cover"
