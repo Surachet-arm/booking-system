@@ -59,7 +59,7 @@ export default function Events() {
               {/* Event Image */}
               {e.image && (
                 <img
-                  src={`http://localhost:5000/uploads/${e.image}`}
+                  src={`https://booking-system-72uy.onrender.com/uploads/${e.image}`}
                   alt={e.title}
                   className="w-full h-48 object-cover"
                 />

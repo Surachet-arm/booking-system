@@ -36,7 +36,7 @@ export default function EditEvent() {
         });
 
         if (e.image) {
-          setPreview(`http://localhost:5000/uploads/${e.image}`);
+          setPreview(`https://booking-system-72uy.onrender.com/uploads/${e.image}`);
         }
 
       } catch (err) {
